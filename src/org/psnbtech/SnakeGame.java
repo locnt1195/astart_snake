@@ -34,7 +34,7 @@ public class SnakeGame extends JFrame {
 	 * right when the game starts, so that we're not just a head moving
 	 * around on the board.
 	 */
-	private static final int MIN_SNAKE_LENGTH = 5;
+	private static final int MIN_SNAKE_LENGTH = 3;
 	
 	/**
 	 * The maximum number of directions that we can have polled in the
@@ -271,13 +271,15 @@ public class SnakeGame extends JFrame {
 			/*
 			 * If a cycle has elapsed on the logic timer, then update the game.
 			 */
+			board.repaint();
+			side.repaint();
+			
 			if(logicTimer.hasElapsedCycle()) {
 				updateGame();
 			}
 			
 			//Repaint the board and side panel with the new content.
-			board.repaint();
-			side.repaint();
+			
 			
 			/*
 			 * Calculate the delta time between since the start of the frame
@@ -442,19 +444,25 @@ public class SnakeGame extends JFrame {
 		 * Create the head at the center of the board.
 		 */
 		Point head = new Point(BoardPanel.COL_COUNT / 2, BoardPanel.ROW_COUNT / 2);
-
+		
 		/*
 		 * Clear the snake list and add the head.
 		 */
 		snake.clear();
-		snake.add(head);
+//		snake.add(head);
+		
 		
 		/*
 		 * Clear the board and add the head.
 		 */
 		board.clearBoard();
-		board.setTile(head, TileType.SnakeHead);
-		
+//		board.setTile(head, TileType.SnakeHead);
+		for(int i = 0; i < MIN_SNAKE_LENGTH; i++){
+			Point p = new Point(BoardPanel.COL_COUNT / 2, BoardPanel.ROW_COUNT / 2 + i);
+			snake.add(p);
+			if(i == 0) board.setTile(p, TileType.SnakeHead);
+			else board.setTile(p, TileType.SnakeBody);
+		}
 		/*
 		 * Clear the directions and add north as the
 		 * default direction.
@@ -583,6 +591,10 @@ public class SnakeGame extends JFrame {
 				return 0;
 			}
 		});
+		System.out.println("==============================================================");
+		System.out.format("Start: %d, %d", start.x, start.y);
+		System.out.println();
+		System.out.format("Goal: %d, %d", goal.x, goal.y);
 		ArrayList<Node> closelist = new ArrayList<Node>();
 		Node sstartt = new Node(start);
 		sstartt.setH(Math.abs(start.x - goal.x ) + Math.abs((start.y - goal.y)));
@@ -595,22 +607,16 @@ public class SnakeGame extends JFrame {
 				return;
 			}
 			for (Node node : current.getNeighbors(board)) {
-				
+				if(check_list_contains_node(closelist, node) || check_queue_contians_node(openlist, node)){
+					continue;
+				}
 				float g_cost = Math.abs(node.getPoint().x - start.x ) + Math.abs((node.getPoint().y - start.y));
 				float h_cost = Math.abs(node.getPoint().x - goal.x ) + Math.abs((node.getPoint().y - goal.y));
 				node.setG(g_cost);
 				node.setH(h_cost);
 				node.setF(g_cost + h_cost);
-				if(check_list_contains_node(closelist, node)){
-					continue;
-				}
-				
-				if(!openlist.contains(node.getPoint())){
-					node.setParent(current);
-					openlist.add(node);
-
-				}
-				//				board.setTile(node.getPoint(), TileType.Block);
+				node.setParent(current);
+				openlist.add(node);
 			}
 		}
 		return;
@@ -625,28 +631,46 @@ public class SnakeGame extends JFrame {
 		return false;
 	}
 	
+	boolean check_queue_contians_node(PriorityQueue<Node> list, Node node){
+		for(Node nod : list){
+			if(node.getPoint().equals(nod.getPoint())){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	protected void constructPath(Node node) {
 		  while (node.getParent() != null) {
 		    if(node.getPoint().x == node.getParent().getPoint().x){
 		    	/*neu parent ben tren*/
 		    	if(node.getPoint().y > node.getParent().getPoint().y){
 		    		directions.add(Direction.North);
+		    		System.out.println();
+					System.out.format("Node: %d, %d , North", node.getPoint().x, node.getPoint().y);
 		    	}
 		    	/*neu parent ben duoi*/
 		    	else if(node.getPoint().y < node.getParent().getPoint().y){
 		    		directions.add(Direction.South);
+		    		System.out.println();
+					System.out.format("Node: %d, %d, South", node.getPoint().x, node.getPoint().y);
 		    	}
 		    }
-		    else{
+		    else if(node.getPoint().y == node.getParent().getPoint().y){
 		    	/*neu parent ben trai*/
 		    	if(node.getPoint().x > node.getParent().getPoint().x){
 		    		directions.add(Direction.West);
+		    		System.out.println();
+					System.out.format("Node: %d, %d, West", node.getPoint().x, node.getPoint().y);
 		    	}
 		    	/*neu parent ben duoi*/
 		    	else if(node.getPoint().y < node.getParent().getPoint().x){
 		    		directions.add(Direction.East);
+		    		System.out.println();
+					System.out.format("Node: %d, %d, East", node.getPoint().x, node.getPoint().y);
 		    	}
 		    }
+		    
 		    node = node.getParent();
 		  }
 		}
