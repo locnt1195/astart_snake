@@ -663,8 +663,8 @@ public class SnakeGame extends JFrame {
 		    		System.out.println();
 					System.out.format("Node: %d, %d, West", node.getPoint().x, node.getPoint().y);
 		    	}
-		    	/*neu parent ben duoi*/
-		    	else if(node.getPoint().y < node.getParent().getPoint().x){
+		    	/*neu parent ben phai*/
+		    	else if(node.getPoint().x < node.getParent().getPoint().x){
 		    		directions.add(Direction.East);
 		    		System.out.println();
 					System.out.format("Node: %d, %d, East", node.getPoint().x, node.getPoint().y);
